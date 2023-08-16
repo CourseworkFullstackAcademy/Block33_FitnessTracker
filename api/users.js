@@ -19,6 +19,7 @@ router.post('/login', async (req, res, next) => {
 
   try {
     const user = await getUser({username, password});
+    console.log('User found:', user)
     if(!user) {
       next({
         name: 'IncorrectCredentialsError',

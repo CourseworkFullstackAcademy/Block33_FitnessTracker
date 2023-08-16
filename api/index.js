@@ -5,6 +5,7 @@ const { getUserById } = require('../db');
 const client = require('../db/client');
 const { JWT_SECRET = 'neverTell'} = process.env;
 
+
 // GET /api/health
 router.get('/health', async (req, res, next) => {
   try {
@@ -19,34 +20,41 @@ router.get('/health', async (req, res, next) => {
 });
 
 
-// set `req.user` if possible
+//set `req.user` if possible
 router.use(async (req, res, next) => {
-  const prefix = 'Bearer ';
-  const auth = req.header('Authorization');
-  
-  if (!auth) { // nothing to see here
-    next();
-  } else if (auth.startsWith(prefix)) {
-    const token = auth.slice(prefix.length);
+  // if (req.path === '/login') { // Skip middleware for /login route
+  //   next();
+  // } else {
+  //   const prefix = 'Bearer ';
+  //   const auth = req.header('Authorization');
     
-    try {
-      const parsedToken = jwt.verify(token, JWT_SECRET);
+    if (!auth) {
+      next();
+    } else if (auth.startsWith(prefix)) {
+      const token = auth.slice(prefix.length);
       
-      const id = parsedToken && parsedToken.id
-      if (id) {
-        req.user = await getUserById(id);
-        next();
+      try {
+        const parsedToken = jwt.verify(token, JWT_SECRET);
+        
+        const id = parsedToken && parsedToken.id;
+        if (id) {
+          try {
+            req.user = await getUserById(id);
+            next();
+          } catch (error) {
+            next(error);
+          }
+        }
+      } catch (error) {
+        next(error);
       }
-    } catch (error) {
-      next(error);
+    } else {
+      next({
+        name: 'AuthorizationHeaderError',
+        message: `Authorization token must start with ${prefix}`
+      });
     }
-  } else {
-    next({
-      name: 'AuthorizationHeaderError',
-      message: `Authorization token must start with ${ prefix }`
-    });
-  }
-});
+  });
 
 router.use((req, res, next) => {
   if (req.user) {
