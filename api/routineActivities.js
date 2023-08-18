@@ -1,12 +1,21 @@
 const express = require('express');
 const router = express.Router();
-const { updateRoutineActivity, canEditRoutineActivity, destroyRoutineActivity, getRoutineActivityById } = require('../db');
+const { updateRoutineActivity, canEditRoutineActivity, destroyRoutineActivity, getRoutineActivityById, getAllRoutineActivities } = require('../db');
 const client = require('../db/client');
 const { requireUser, requiredNotSent } = require('./utils')
 
-
+//Get /api/routine_activitites
+router.get('/', async (req, res, next) => {
+  try {
+    const routineActivities = await getAllRoutineActivities();
+    res.send(routineActivities);
+  } catch (error) {
+    next(error)
+  }
+})
 
 // PATCH /api/routine_activities/:routineActivityId
+//do I need to adjust for the fact that there is no id for the user directly? That in the routine_activies, it has a creatorId and creatorName in the body?
 router.patch('/:routineActivityId', requireUser, requiredNotSent({requiredParams: ['count', 'duration'], atLeastOne: true}), async (req, res, next) => {
   try {
     const {count, duration} = req.body;

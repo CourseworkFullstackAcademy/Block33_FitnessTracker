@@ -25,8 +25,8 @@ router.use(async (req, res, next) => {
   // if (req.path === '/login') { // Skip middleware for /login route
   //   next();
   // } else {
-  //   const prefix = 'Bearer ';
-  //   const auth = req.header('Authorization');
+    const prefix = 'Bearer ';
+    const auth = req.header('Authorization');
     
     if (!auth) {
       next();
